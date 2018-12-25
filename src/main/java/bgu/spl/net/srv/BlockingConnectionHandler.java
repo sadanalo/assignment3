@@ -52,4 +52,7 @@ public class BlockingConnectionHandler<T> implements Runnable, ConnectionHandler
         connected = false;
         sock.close();
     }
+    public void send(T message){
+        //TODO:implement
+    }
 }

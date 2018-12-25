@@ -16,7 +16,7 @@ public class ConnectionsImpl<T> implements Connections<T> {
     public boolean send(int connectionId, T msg) {
         boolean sendingWasSuccessful;
         if (handlersByClient.containsKey(connectionId)) {  // client is not registered(or something)//
-            handlersByClient.get(connectionId).send(msg);
+            handlersByClient.get(connectionId).send(msg); //TODO: what does send do here?
             sendingWasSuccessful = true;
         } else {
             sendingWasSuccessful = false;
@@ -26,15 +26,17 @@ public class ConnectionsImpl<T> implements Connections<T> {
 
     @Override
     public void broadcast(T msg) {
-for (Integer client : handlersByClient.keySet()){
-    handlersByClient.get(client).send(msg);
-}
+        for (Integer client : handlersByClient.keySet()) {
+            handlersByClient.get(client).send(msg);
+        }
     }
 
     @Override
     public void disconnect(int connectionId) {
-if(handlersByClient.containsKey(connectionId)) {
-    handlersByClient.remove(connectionId);
-}
+        if (handlersByClient.containsKey(connectionId)) {
+            handlersByClient.remove(connectionId);
+        }
     }
+
+
 }
