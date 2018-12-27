@@ -1,0 +1,16 @@
+package bgu.spl.net.api.bidi;
+
+public class NotificationMsg implements Message {
+    private boolean privateMessage;
+    private String postingUser;
+    private String content;
+    private int opCode;
+
+    public NotificationMsg(int privateMessage, String postingUser, String content, int opCode){
+        this.privateMessage = (privateMessage == 0);
+        this.postingUser = postingUser;
+        this.content = content;
+        this.opCode= opCode;
+    }
+
+}

@@ -16,7 +16,7 @@ public class ConnectionsImpl<T> implements Connections<T> {
     public boolean send(int connectionId, T msg) {
         boolean sendingWasSuccessful;
         if (handlersByClient.containsKey(connectionId)) {  // client is not registered(or something)//
-            handlersByClient.get(connectionId).send(msg); //TODO: what does send do here?
+            handlersByClient.get(connectionId).send(msg);
             sendingWasSuccessful = true;
         } else {
             sendingWasSuccessful = false;
