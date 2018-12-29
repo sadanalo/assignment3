@@ -3,12 +3,13 @@ package bgu.spl.net.api.bidi;
 import java.io.Serializable;
 
 public class ErrorMsg extends Message  {
-    private int opCode;
     private int msgRelatedOpcode;
 
-    public ErrorMsg(int thisOpCode, int msgRelatedOpcode){
+    public ErrorMsg(short msgRelatedOpcode){
+
+        super((short) 11);
+
         this.msgRelatedOpcode = msgRelatedOpcode;
-        this.opCode = thisOpCode;
     }
 
 }

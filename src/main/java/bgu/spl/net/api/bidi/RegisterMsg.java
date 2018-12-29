@@ -6,11 +6,18 @@ public class RegisterMsg extends Message{
 
     private String userName;
     private String password;
-    private int opCode;
 
     public RegisterMsg(int opCode, String userName, String password){
+        super((short) 1);
         this.userName = userName;
         this.password = password;
-        this.opCode = opCode;
+    }
+
+    public String getUserName() {
+        return userName;
+    }
+
+    public String getPassword() {
+        return password;
     }
 }

@@ -4,12 +4,14 @@ import com.sun.xml.internal.bind.v2.TODO;
 
 import java.io.Serializable;
 
-public abstract class  Message implements Serializable {
-private int opCode;
+public class  Message implements Serializable {  // not sure if every other message need to do "implements Serializable//
 
-    public int getOpCode(){
-        return this.opCode;   //TODO find out if this method works for every other message//
-
+    private short opCode;
+    public Message (short opCode){
+        this.opCode = opCode;
     }
 
+    public int getOpCode(){
+        return this.opCode;
+    }
 }

@@ -5,11 +5,10 @@ import java.io.Serializable;
 public class PmMsg extends Message {
     private String userName;
     private String content;
-    private int opCode;
 
-    public PmMsg(String userName, String content, int opCode){
+    public PmMsg(String userName, String content){
+        super(7);
         this.content = content;
         this.userName = userName;
-        this.opCode = opCode;
     }
 }
