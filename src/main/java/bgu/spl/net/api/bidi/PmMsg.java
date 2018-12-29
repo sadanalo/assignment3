@@ -1,6 +1,8 @@
 package bgu.spl.net.api.bidi;
 
-public class PmMsg implements Message {
+import java.io.Serializable;
+
+public class PmMsg extends Message {
     private String userName;
     private String content;
     private int opCode;

@@ -2,20 +2,18 @@ package bgu.spl.net.api.bidi;
 
 public class BidiMessagingProtocolImpl<Message> implements BidiMessagingProtocol<Message> {
 
-    private int conccectionsId;
+    private int connectionsId;
     private Connections connections;
     private boolean shouldTerminate;
 
     @Override
     public void start(int connectionId, Connections connections) {
-        this.conccectionsId = connectionId;
+        this.connectionsId = connectionId;
         this.connections = connections;
     }
 
     @Override
     public void process(Message message) {
-
-        connections.send(conccectionsId, message);
 
     }
 

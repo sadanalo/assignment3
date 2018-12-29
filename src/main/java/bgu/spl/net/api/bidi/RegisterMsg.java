@@ -1,6 +1,8 @@
 package bgu.spl.net.api.bidi;
 
-public class RegisterMsg implements Message {
+import java.io.Serializable;
+
+public class RegisterMsg extends Message{
 
     private String userName;
     private String password;

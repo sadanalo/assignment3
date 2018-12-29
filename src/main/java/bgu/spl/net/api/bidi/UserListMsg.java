@@ -1,6 +1,8 @@
 package bgu.spl.net.api.bidi;
 
-public class UserListMsg implements Message {
+import java.io.Serializable;
+
+public class UserListMsg extends Message {
     private int opCode;
 
     public UserListMsg (int opCode){

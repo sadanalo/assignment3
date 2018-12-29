@@ -1,6 +1,8 @@
 package bgu.spl.net.api.bidi;
 
-public class NotificationMsg implements Message {
+import java.io.Serializable;
+
+public class NotificationMsg extends Message {
     private boolean privateMessage;
     private String postingUser;
     private String content;

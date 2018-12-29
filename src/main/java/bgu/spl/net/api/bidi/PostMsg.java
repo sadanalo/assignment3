@@ -1,6 +1,8 @@
 package bgu.spl.net.api.bidi;
 
-public class PostMsg implements Message {
+import java.io.Serializable;
+
+public class PostMsg extends Message {
     private String content;
     private int opCode;
 

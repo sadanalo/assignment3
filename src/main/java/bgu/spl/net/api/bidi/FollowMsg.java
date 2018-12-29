@@ -1,8 +1,9 @@
 package bgu.spl.net.api.bidi;
 
+import java.io.Serializable;
 import java.util.LinkedList;
 
-public class FollowMsg implements Message {
+public class FollowMsg extends Message {
 
     private boolean follow;
     private int numOfUsers;

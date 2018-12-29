@@ -1,6 +1,8 @@
 package bgu.spl.net.api.bidi;
 
-public class StatMsg implements Message {
+import java.io.Serializable;
+
+public class StatMsg extends Message{
     private String userName;
     private int opCode;
 

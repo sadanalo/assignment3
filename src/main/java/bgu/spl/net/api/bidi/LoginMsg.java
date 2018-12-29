@@ -1,6 +1,8 @@
 package bgu.spl.net.api.bidi;
 
-public class LoginMsg implements Message {
+import java.io.Serializable;
+
+public class LoginMsg extends Message {
     private int opCode;
     public LoginMsg(int opCode){
         this.opCode = opCode;
