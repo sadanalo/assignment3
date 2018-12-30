@@ -143,7 +143,7 @@ public class BidiMessagingProtocolImpl implements BidiMessagingProtocol<Message>
     }
 
     private void processFollow(FollowMsg message) {
-        int successful = 0;  //maybe atomicInt? synchronized? something?//
+        short successful = 0;  //maybe atomicInt? synchronized? something?//
         String userNameList = "";
         //if current user is logged//
         if(currentUser().isLogged()) {
