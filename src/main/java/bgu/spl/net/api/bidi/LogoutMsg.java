@@ -5,7 +5,7 @@ import java.io.Serializable;
 public class LogoutMsg extends Message {
 
 
-    public LogoutMsg (int opCode){
+    public LogoutMsg (){
         super((short )3);
     }
 }

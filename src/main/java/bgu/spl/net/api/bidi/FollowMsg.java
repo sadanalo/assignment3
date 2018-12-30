@@ -10,9 +10,9 @@ public class FollowMsg extends Message {
     private LinkedList<String> userNameList;   //maybe concurrent//
 
 
-    public FollowMsg(int follow, int numOfUsers, String userNames) {
+    public FollowMsg(byte follow, int numOfUsers, String userNames) {
         super((short)4);
-        this.follow = (follow == 0);
+        this.follow = (follow == 0);   //maybe use '\0'
         this.numOfUsers = numOfUsers;
         this.userNameList = makeStringList(userNames);
 
@@ -20,6 +20,7 @@ public class FollowMsg extends Message {
     }
 
     private LinkedList<String> makeStringList(String userNames) {
+       // TODO make linkedList from user names//
         LinkedList<String> userNameLIst = new LinkedList<>();
         return userNameLIst;
     }

@@ -27,7 +27,7 @@ public class BidiMessagingProtocolImpl implements BidiMessagingProtocol<Message>
                 processLogin ((LoginMsg) message);
                 break;
             case 3:
-                processLogout((LogoutMsg) message);
+                processLogout();
                 break;
             case 4:
                 processFollow((FollowMsg) message);
@@ -192,7 +192,7 @@ public class BidiMessagingProtocolImpl implements BidiMessagingProtocol<Message>
 
     }
 
-    private void processLogout(LogoutMsg message) {
+    private void processLogout() {
         //if user is logged in//
         if(currentUser().isLogged()){
             //take out from loggedUsers//

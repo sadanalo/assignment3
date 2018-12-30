@@ -4,8 +4,8 @@ import java.io.Serializable;
 
 public class UserListMsg extends Message {
 
-    public UserListMsg (int opCode){
-        super(opCode);
+    public UserListMsg (){
+        super((short)7);
     }
 
 }
