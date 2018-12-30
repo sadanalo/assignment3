@@ -11,7 +11,7 @@ public class  Message implements Serializable {  // not sure if every other mess
         this.opCode = opCode;
     }
 
-    public int getOpCode(){
+    public short getOpCode(){
         return this.opCode;
     }
 }

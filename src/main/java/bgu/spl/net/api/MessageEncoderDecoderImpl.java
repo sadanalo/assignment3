@@ -9,7 +9,7 @@ public class MessageEncoderDecoderImpl implements MessageEncoderDecoder<Message>
 
     private final ByteBuffer opCodeBuffer = ByteBuffer.allocate(2);
     private final ByteBuffer messageBuffer =  ByteBuffer.allocate( 1<<10 );
-    private int len = 0;
+    private byte zeroByte = 0;   //this is how you create zeroByte?
     private int zeroByteCounter = 0;
     private short numOfUsers = 0;
     private byte followUnfollow = 0;
@@ -28,7 +28,56 @@ public class MessageEncoderDecoderImpl implements MessageEncoderDecoder<Message>
 
     @Override
     public byte[] encode(Message message) {
-        return (message + "\n").getBytes(); //uses utf8 by default
+        switch (message.getOpCode()) {
+            case 9:
+                messageBuffer.put(shortToBytes(message.getOpCode()));
+                messageBuffer.put(((NotificationMsg) message).getType());
+                messageBuffer.put(((NotificationMsg) message).getPostingUser().getBytes());
+                messageBuffer.put(zeroByte);
+                messageBuffer.put(((NotificationMsg) message).getContent().getBytes());
+                messageBuffer.put(zeroByte);
+                break;
+            case 11:
+                messageBuffer.put(shortToBytes(message.getOpCode()));
+                messageBuffer.put(shortToBytes(((ErrorMsg) message).getMsgRelatedOpcode()));
+                break;
+            case 10:
+               if (message instanceof UserListAckMsg){
+                   messageBuffer.put(shortToBytes(message.getOpCode()));
+                   messageBuffer.put(shortToBytes(((UserListAckMsg) message).getMsgRelatedOpcode()));
+                   messageBuffer.put(shortToBytes(((UserListAckMsg) message).getNumOfusers()));
+                   messageBuffer.put(((UserListAckMsg) message).getUsersList().getBytes());
+                   messageBuffer.put(zeroByte);
+                   break;
+               } else{
+                   if(message instanceof StatAckMsg){
+                       messageBuffer.put(shortToBytes(message.getOpCode()));
+                       messageBuffer.put(shortToBytes(((StatAckMsg) message).getMsgRelatedOpcode()));
+                       messageBuffer.put(shortToBytes(((StatAckMsg) message).getNumOfPosts()));
+                       messageBuffer.put(shortToBytes(((StatAckMsg) message).getNumOfFollowers()));
+                       messageBuffer.put(shortToBytes(((StatAckMsg) message).getNumOfFollowing()));
+                   }
+                   else{
+                       if(message instanceof FollowAckMsg){
+                           messageBuffer.put(shortToBytes(message.getOpCode()));
+                           messageBuffer.put(shortToBytes(((FollowAckMsg) message).getMsgRelatedOpcode()));
+                           messageBuffer.put(shortToBytes(((FollowAckMsg) message).getNumOfusers()));
+                           messageBuffer.put(((FollowAckMsg) message).getUserNameList().getBytes());
+                           messageBuffer.put(zeroByte);
+                       }
+                   }
+               }
+
+        }
+        messageBuffer.flip();
+        return messageBuffer.array();
+    }
+    public byte[] shortToBytes(short num)
+    {
+        byte[] bytesArr = new byte[2];
+        bytesArr[0] = (byte)((num >> 8) & 0xFF);
+        bytesArr[1] = (byte)(num & 0xFF);
+        return bytesArr;
     }
 
     private Message popMessage(short opCode, byte nextByte) {

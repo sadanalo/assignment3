@@ -1,15 +1,34 @@
 package bgu.spl.net.api.bidi;
 
-public class FollowAckMsg extends AckMsg {
+public class FollowAckMsg extends Message {
 
-    private int numOfusers;
+    private short numOfusers;
     private boolean followUnfollow;
     private String userNameList;
 
-    public FollowAckMsg(short msgRelatedOpcode, int numOfusers,  String userNameList ) {
-        super(msgRelatedOpcode);
+    public short getNumOfusers() {
+        return numOfusers;
+    }
+
+    public boolean isFollowUnfollow() {
+        return followUnfollow;
+    }
+
+    public String getUserNameList() {
+        return userNameList;
+    }
+
+    public short getMsgRelatedOpcode() {
+        return msgRelatedOpcode;
+    }
+
+    private short msgRelatedOpcode;
+
+    public FollowAckMsg(short msgRelatedOpcode, short numOfusers,  String userNameList ) {
+        super((short)10);
         this.numOfusers = numOfusers;
         this.userNameList = userNameList;
+        this.msgRelatedOpcode = msgRelatedOpcode;
 
     }
 

@@ -72,7 +72,8 @@ public class BidiMessagingProtocolImpl implements BidiMessagingProtocol<Message>
     }
 
     private void processPm(PmMsg message) {
-        NotificationMsg notificationMsg = new NotificationMsg(currentUser().getName(), message.getContent(),'0');
+        byte type = 0;   //this is how we declare byte?
+        NotificationMsg notificationMsg = new NotificationMsg(currentUser().getName(), message.getContent(),type);
 
         //if current user is not logged or the user receiving the message is not registered//
         if(!currentUser().isLogged() || getUser(message.getUserName()) == null){
@@ -83,7 +84,7 @@ public class BidiMessagingProtocolImpl implements BidiMessagingProtocol<Message>
                 connections.send(getUserConnectionId(message.getUserName()), message);
                 //send notification//
                 connections.send(getUserConnectionId(message.getUserName()),notificationMsg);
-               // add to sending user sentMessageList//
+                // add to sending user sentMessageList//
                 currentUser().getSentMessages().add(message);
             }
             else{ //user receiving the message is not logged
@@ -96,31 +97,35 @@ public class BidiMessagingProtocolImpl implements BidiMessagingProtocol<Message>
             }
         }
     }
-
+    // at this moment we are sending posts and notification, perhaps we need only notification//
     private void processPost(PostMsg message) {
         //if user is not logged//
-        NotificationMsg notificationMsg = new NotificationMsg(currentUser().getName(), message.getContent(),'1');
+        byte type = 1;
+        NotificationMsg notificationMsg = new NotificationMsg(currentUser().getName(), message.getContent(),type);
         if(!currentUser().isLogged()){
             connections.send(connectionId, new ErrorMsg((short) message.getOpCode()));
         }
         else {
-            for(String taggedUser : message.getTaggedUsers()){  //tagged users //
-                if(getUser(taggedUser).isLogged()){
-                    // send message//
-                    connections.send(getUserConnectionId(taggedUser),message);
-                    //send notification//
-                    connections.send(getUserConnectionId(taggedUser),notificationMsg);
-                    // add message to posting user list//
-                    currentUser().getSentMessages().add(message);
-                } else{ // the user is registered but not logged ,//
-                    // so we add the message to his notReadMessageQueue,//
-                    // and he will receive it  after login//
+            for(String taggedUser : message.getTaggedUsers()) {  //tagged users //
+                if (!currentUser().getFollowersList().containsKey(taggedUser)){  //maybe taggedUser is also on the followers list//
+                    if (getUser(taggedUser).isLogged()) {
 
-                     // add message and notification to the tagged user NotReadMessageQueue
-                    getUser(taggedUser).getNotReadMessageQueue().add(message);
-                    getUser(taggedUser).getNotReadMessageQueue().add(notificationMsg);
-                   // add the post the posting user sentMessage list//
-                    currentUser().getSentMessages().add(message);
+                        // send message//
+                        connections.send(getUserConnectionId(taggedUser), message);
+                        //send notification//
+                        connections.send(getUserConnectionId(taggedUser), notificationMsg);
+                        // add message to posting user list//
+                        currentUser().getSentMessages().add(message);
+                    } else { // the user is registered but not logged ,//
+                        // so we add the message to his notReadMessageQueue,//
+                        // and he will receive it  after login//
+
+                        // add message and notification to the tagged user NotReadMessageQueue
+                        getUser(taggedUser).getNotReadMessageQueue().add(message);
+                        getUser(taggedUser).getNotReadMessageQueue().add(notificationMsg);
+                        // add the post the posting user sentMessage list//
+                        currentUser().getSentMessages().add(message);
+                    }
                 }
             }
             for (String userName : currentUser().getFollowersList().keySet()){  // followers//
@@ -129,7 +134,7 @@ public class BidiMessagingProtocolImpl implements BidiMessagingProtocol<Message>
                     connections.send(getUserConnectionId(userName), notificationMsg);
                     currentUser().getSentMessages().add(message);
                 } else{
-                   getUser(userName).getNotReadMessageQueue().add(notificationMsg);
+                    getUser(userName).getNotReadMessageQueue().add(notificationMsg);
                     getUser(userName).getNotReadMessageQueue().add(message);
                     currentUser().getSentMessages().add(message);
                 }

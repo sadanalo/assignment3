@@ -3,7 +3,7 @@ package bgu.spl.net.api.bidi;
 import java.io.Serializable;
 
 public class ErrorMsg extends Message  {
-    private int msgRelatedOpcode;
+    private short msgRelatedOpcode;
 
     public ErrorMsg(short msgRelatedOpcode){
 
@@ -12,4 +12,7 @@ public class ErrorMsg extends Message  {
         this.msgRelatedOpcode = msgRelatedOpcode;
     }
 
+    public short getMsgRelatedOpcode() {
+        return msgRelatedOpcode;
+    }
 }
