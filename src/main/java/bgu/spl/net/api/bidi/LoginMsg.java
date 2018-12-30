@@ -5,9 +5,9 @@ import java.io.Serializable;
 public class LoginMsg extends Message {
 private String userName;
 private String password;
-    public LoginMsg(short opCode, String userName, String password){
+    public LoginMsg( String userName, String password){
 
-        super(opCode);
+        super((short)2);
         this.userName= userName;
         this.password = password;
     }

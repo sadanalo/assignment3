@@ -3,7 +3,7 @@ package bgu.spl.net.api.bidi;
 import java.io.Serializable;
 
 public class AckMsg extends Message {
-    private short msgRelatedOpcode;
+    protected short msgRelatedOpcode;
     // add more things for each kind of message, the "optional" field//
 
     public AckMsg(short msgRelatedOpcode ){

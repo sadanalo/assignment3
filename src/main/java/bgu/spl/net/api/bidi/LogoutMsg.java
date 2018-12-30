@@ -6,6 +6,6 @@ public class LogoutMsg extends Message {
 
 
     public LogoutMsg (int opCode){
-        super(opCode);
+        super((short )3);
     }
 }

@@ -1,14 +1,17 @@
 package bgu.spl.net.srv;
 
+import bgu.spl.net.api.bidi.Message;
 import bgu.spl.net.api.bidi.User;
 
+import java.util.LinkedList;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedDeque;
 
 public class DataBase {
 
    private ConcurrentHashMap<String,User> usersByName;
-    private ConcurrentHashMap<String ,User> loggedUsers;
-    private ConcurrentHashMap<Integer,User> usersByConnectionId ;
+    private ConcurrentHashMap<Integer,User> usersByConnectionId;
+
 
 
 
@@ -18,7 +21,6 @@ public class DataBase {
     }
     private DataBase (){
         this.usersByName = new ConcurrentHashMap<>();
-        this.loggedUsers = new ConcurrentHashMap<>();
         this.usersByConnectionId = new ConcurrentHashMap<>();
     }
     public static DataBase getInstance(){
@@ -35,11 +37,14 @@ public class DataBase {
     public void registerUser (User user){
         this.usersByName.put(user.getName(),user);
     }
-    public void logInUser (User user){
-        this.loggedUsers.put(user.getName(), user);
+
+    public void logInUser (User user, int connectionId){
+        this.usersByConnectionId.put(connectionId, user);
+        user.setLogged(true);
     }
-    public ConcurrentHashMap<String, User> getLoggedUsers() {
-        return loggedUsers;
+    public void logoutUser(int connectionId){
+       this.usersByConnectionId.get(connectionId).setLogged(false);
+        this.usersByConnectionId.remove(connectionId,this.usersByConnectionId.get(connectionId) );
     }
     public ConcurrentHashMap<Integer, User> getUsersByConnectionId() {
         return usersByConnectionId;

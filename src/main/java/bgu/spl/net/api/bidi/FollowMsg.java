@@ -10,8 +10,8 @@ public class FollowMsg extends Message {
     private LinkedList<String> userNameList;   //maybe concurrent//
 
 
-    public FollowMsg(int follow, int numOfUsers, String userNames, short opCode) {
-        super(opCode);
+    public FollowMsg(int follow, int numOfUsers, String userNames) {
+        super((short)4);
         this.follow = (follow == 0);
         this.numOfUsers = numOfUsers;
         this.userNameList = makeStringList(userNames);
