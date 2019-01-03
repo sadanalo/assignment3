@@ -129,12 +129,10 @@ public class BidiMessagingProtocolImpl implements BidiMessagingProtocol<Message>
             }
             for (String userName : currentUser().getFollowersList().keySet()){  // followers//
                 if(getUser(userName).isLogged()){
-                    connections.send(getUserConnectionId(userName), message);
                     connections.send(getUserConnectionId(userName), notificationMsg);
                     currentUser().getSentMessages().add(message);
                 } else{
                     getUser(userName).getNotReadMessageQueue().add(notificationMsg);
-                    getUser(userName).getNotReadMessageQueue().add(message);
                     currentUser().getSentMessages().add(message);
                 }
             }
@@ -197,18 +195,18 @@ public class BidiMessagingProtocolImpl implements BidiMessagingProtocol<Message>
     }
 
     private void processLogout(LogoutMsg message) {
-        //if user is logged in//
-        if(currentUser().isLogged()){
+       if (!currentUser().isLogged()) {
+           connections.send(connectionId, new ErrorMsg(message.getOpCode()));
+       }
+       synchronized ()
+       while(currentUser().isLogged()){                  //  I think this method should be blocking
             //take out from loggedUsers//
 
                connections.send(connectionId, new AckMsg(message.getOpCode()));
-               connections.disconnect(connectionId);
+               connections.disconnect(connectionId);                  //TODO check send returning boolean
                dataBase.logoutUser(connectionId);
                this.shouldTerminate = true;
 
-        }
-        else {
-            connections.send(connectionId, new ErrorMsg(message.getOpCode()));
         }
 
     }

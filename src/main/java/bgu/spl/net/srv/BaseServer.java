@@ -23,7 +23,7 @@ public abstract class BaseServer<T> implements Server<T> {
             int port,
             Supplier<BidiMessagingProtocol<T>> protocolFactory,
             Supplier<MessageEncoderDecoder<T>> encdecFactory
-            ) {
+    ) {
 
         this.port = port;
         this.protocolFactory = protocolFactory;
@@ -52,7 +52,7 @@ public abstract class BaseServer<T> implements Server<T> {
                         protocolFactory.get(),
                         connections,
                         connectionId);
-++connectionId;
+                ++connectionId;
                 connections.addConnection(sock.getLocalPort(), handler);
 
                 execute(handler);
