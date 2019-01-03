@@ -1,5 +1,6 @@
 package bgu.spl.net.api.bidi;
 
+import java.util.LinkedList;
 import java.util.Set;
 
 public class UserListAckMsg extends Message {
@@ -13,7 +14,7 @@ public class UserListAckMsg extends Message {
     protected short msgRelatedOpcode;
 
 
-    public UserListAckMsg(short msgRelatedOpcode, short numOfUsers, Set<String> users) {
+    public UserListAckMsg(short msgRelatedOpcode, short numOfUsers, LinkedList<String> users) {
         super((short)10);
         this.numOfusers = numOfUsers;
         this.usersList = getUsersList(users);
@@ -22,12 +23,12 @@ public class UserListAckMsg extends Message {
 
     }
 
-    private String getUsersList(Set<String> users) {
-        String list = "";
-        for (String user : users){
-             list +=  "\0" + user;
+    private String getUsersList(LinkedList<String> users) {
+        String namesList = "";
+        for (int i = 0 ; i<users.size(); ++i){
+             namesList +=  users.get(i) + "\0";
         }
-        return list;
+        return namesList;
     }
 
     public String getUsersList() {

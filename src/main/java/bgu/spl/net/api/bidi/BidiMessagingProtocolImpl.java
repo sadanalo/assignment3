@@ -1,12 +1,16 @@
 package bgu.spl.net.api.bidi;
 import bgu.spl.net.srv.DataBase;
-
 public class BidiMessagingProtocolImpl implements BidiMessagingProtocol<Message> {
 
 
     private Connections<Message> connections;
     private boolean shouldTerminate;
     private int connectionId;
+    private DataBase dataBase;
+
+    public BidiMessagingProtocolImpl(DataBase dataBase) {
+        this.dataBase = dataBase;
+    }
 
 
     @Override
@@ -27,7 +31,7 @@ public class BidiMessagingProtocolImpl implements BidiMessagingProtocol<Message>
                 processLogin ((LoginMsg) message);
                 break;
             case 3:
-                processLogout();
+                processLogout((LogoutMsg) message);
                 break;
             case 4:
                 processFollow((FollowMsg) message);
@@ -51,11 +55,11 @@ public class BidiMessagingProtocolImpl implements BidiMessagingProtocol<Message>
 
     private void processStatMsg(StatMsg message) {
         // current user is not logged or he is not registered//
-        if (!currentUser().isLogged() || DataBase.getInstance().getUsersByName().containsKey(currentUser().getName())){
-            connections.send(connectionId ,new  ErrorMsg((short) message.getOpCode()));
+        if (!currentUser().isLogged() || dataBase.getUsersByName().containsKey(currentUser().getName())){
+            connections.send(connectionId ,new  ErrorMsg( message.getOpCode()));
         }
         else{
-            connections.send(connectionId, new StatAckMsg ((short)message.getOpCode(),
+            connections.send(connectionId, new StatAckMsg (message.getOpCode(),
                     (short) currentUser().getNumOfPosts(), (short)currentUser().getFollowersList().size(),
                     (short)currentUser().getFollowingList().size())
             );
@@ -64,10 +68,10 @@ public class BidiMessagingProtocolImpl implements BidiMessagingProtocol<Message>
 
     private void processUserList(UserListMsg message) {
         if (!currentUser().isLogged()){
-            connections.send(connectionId, new ErrorMsg((short)message.getOpCode()));
+            connections.send(connectionId, new ErrorMsg(message.getOpCode()));
         }
         else{  //making the list to string is in userListAckMsg//
-            connections.send(connectionId, new UserListAckMsg((short)message.getOpCode(),(short) DataBase.getInstance().getUsersByName().size(), DataBase.getInstance().getUsersByName().keySet()));
+            connections.send(connectionId, new UserListAckMsg(message.getOpCode(),(short) dataBase.getUsersByName().size(), dataBase.getRegistrationQueue()));
         }
     }
 
@@ -80,8 +84,7 @@ public class BidiMessagingProtocolImpl implements BidiMessagingProtocol<Message>
             connections.send(connectionId, new ErrorMsg((short)message.getOpCode()));
         }else{
             if (getUser(message.getUserName()).isLogged()){
-                //send message
-                connections.send(getUserConnectionId(message.getUserName()), message);
+
                 //send notification//
                 connections.send(getUserConnectionId(message.getUserName()),notificationMsg);
                 // add to sending user sentMessageList//
@@ -89,9 +92,8 @@ public class BidiMessagingProtocolImpl implements BidiMessagingProtocol<Message>
             }
             else{ //user receiving the message is not logged
 
-                //add notification and message to the receiving user NotReadMessageQueue//
+                //add notification  to the receiving user NotReadMessageQueue, maybe just notification?//
                 getUser(message.getUserName()).getNotReadMessageQueue().add(notificationMsg);
-                getUser(message.getUserName()).getNotReadMessageQueue().add(message);
                 // add to sending user sentMessageList//
                 currentUser().getSentMessages().add(message);
             }
@@ -110,18 +112,15 @@ public class BidiMessagingProtocolImpl implements BidiMessagingProtocol<Message>
                 if (!currentUser().getFollowersList().containsKey(taggedUser)){  //maybe taggedUser is also on the followers list//
                     if (getUser(taggedUser).isLogged()) {
 
-                        // send message//
-                        connections.send(getUserConnectionId(taggedUser), message);
                         //send notification//
                         connections.send(getUserConnectionId(taggedUser), notificationMsg);
                         // add message to posting user list//
                         currentUser().getSentMessages().add(message);
                     } else { // the user is registered but not logged ,//
-                        // so we add the message to his notReadMessageQueue,//
+                        // so we add the notification to his notReadMessageQueue,//
                         // and he will receive it  after login//
 
                         // add message and notification to the tagged user NotReadMessageQueue
-                        getUser(taggedUser).getNotReadMessageQueue().add(message);
                         getUser(taggedUser).getNotReadMessageQueue().add(notificationMsg);
                         // add the post the posting user sentMessage list//
                         currentUser().getSentMessages().add(message);
@@ -157,15 +156,15 @@ public class BidiMessagingProtocolImpl implements BidiMessagingProtocol<Message>
                         currentUser().getFollowingList().put(userName, getUser(userName));
                         // add current user to userName followersList//
                         getUser(userName).getFollowersList().put(currentUser().getName(), currentUser());
-                        userNameList += '\0' + userName;
+                        userNameList += userName + '\0' ;
                         ++successful;
                     }
                 }
                 if (successful != 0){
-                    connections.send(connectionId, new FollowAckMsg((short) 4, successful, userNameList));
+                    connections.send(connectionId, new FollowAckMsg( message.getOpCode(), successful, userNameList));
                 }
                 else{ // successful is 0//
-                    connections.send(connectionId, new ErrorMsg((short) 4));
+                    connections.send(connectionId, new ErrorMsg(message.getOpCode()));
                 }
             }
             else{  // message is unFollow//
@@ -181,39 +180,41 @@ public class BidiMessagingProtocolImpl implements BidiMessagingProtocol<Message>
                     }
                 }
                 if (successful != 0){
-                    connections.send(connectionId, new FollowAckMsg((short) 4, successful, userNameList));
+                    connections.send(connectionId, new FollowAckMsg(message.getOpCode(), successful, userNameList));
                 }
                 else{ // successful is 0//
-                    connections.send(connectionId, new ErrorMsg((short) 4));
+                    connections.send(connectionId, new ErrorMsg(message.getOpCode()));
                 }
 
             }
 
         }
         else {  //current user is not logged//
-            connections.send(connectionId, new ErrorMsg((short) 4));
+            connections.send(connectionId, new ErrorMsg(message.getOpCode()));
         }
 
 
     }
 
-    private void processLogout() {
+    private void processLogout(LogoutMsg message) {
         //if user is logged in//
         if(currentUser().isLogged()){
             //take out from loggedUsers//
-            DataBase.getInstance().logoutUser(connectionId);
-            connections.send(connectionId, new AckMsg((short)3));
 
+               connections.send(connectionId, new AckMsg(message.getOpCode()));
+               connections.disconnect(connectionId);
+               dataBase.logoutUser(connectionId);
+               this.shouldTerminate = true;
 
         }
         else {
-            connections.send(connectionId, new ErrorMsg((short) 3));
+            connections.send(connectionId, new ErrorMsg(message.getOpCode()));
         }
 
     }
 
     private void processLogin(LoginMsg message) {
-        for (User user : DataBase.getInstance().getUsersByName().values()){
+        for (User user : dataBase.getUsersByName().values()){
             //compare names//
             if (message.getUserName().equals(user.getName())){
                 //compare passwords//
@@ -221,49 +222,49 @@ public class BidiMessagingProtocolImpl implements BidiMessagingProtocol<Message>
                     //check if already logged//
                     if(!user.isLogged()){
                         //login the user
-                        DataBase.getInstance().logInUser(user, connectionId);
+                        dataBase.logInUser(user, connectionId);
                         // send the user all of his waiting messages and remove them from NotReadMessageQueue//
                         for (Message msg : user.getNotReadMessageQueue()){
                             connections.send(getUserConnectionId(user.getName()), msg);
                             user.getNotReadMessageQueue().remove(msg);
                         }
-                        connections.send(connectionId, new AckMsg((short)2));
+                        connections.send(connectionId, new AckMsg(message.getOpCode()));
                     }
 
                 }
             }
             else {
-                connections.send(connectionId, new ErrorMsg((short) 2));
+                connections.send(connectionId, new ErrorMsg(message.getOpCode()));
             }
         }
     }
 
     private void processRegister(RegisterMsg message) {
-        for (String userName : DataBase.getInstance().getUsersByName().keySet()){
+        for (String userName : dataBase.getUsersByName().keySet()){
             // if user has already registered//
             if(userName.equals(message.getUserName())){
-                connections.send(connectionId, new ErrorMsg((short)1));
+                connections.send(connectionId, new ErrorMsg(message.getOpCode()));
                 return;
             }
         }
         //if you are here then the user is not registered//
         User user = new User (message.getUserName(), message.getPassword());
-        DataBase.getInstance().registerUser(user);
-        connections.send(connectionId, new AckMsg((short)1));
+        dataBase.registerUser(user);
+        connections.send(connectionId, new AckMsg(message.getOpCode()));
     }
 
 
     private User currentUser(){
-        return DataBase.getInstance().getUsersByConnectionId().get(connectionId);
+        return dataBase.getUsersByConnectionId().get(connectionId);
     }
     private User getUser( String userName){
-        return DataBase.getInstance().getUsersByName().get(userName);
+        return dataBase.getUsersByName().get(userName);
     }
     private int getUserConnectionId(String userName){
         int connectionId =-1;
-        for (int connection: DataBase.getInstance().getUsersByConnectionId().keySet()){
+        for (int connection: dataBase.getUsersByConnectionId().keySet()){
             //if the name mapped to the connection equals the user name, return this connection//
-            if (DataBase.getInstance().getUsersByConnectionId().get(connection).getName().equals(userName)){
+            if (dataBase.getUsersByConnectionId().get(connection).getName().equals(userName)){
                 connectionId =connection;
             }
         }
@@ -273,4 +274,5 @@ public class BidiMessagingProtocolImpl implements BidiMessagingProtocol<Message>
     public boolean shouldTerminate() {
         return this.shouldTerminate;
     }
+
 }

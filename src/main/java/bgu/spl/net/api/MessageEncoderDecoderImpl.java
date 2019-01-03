@@ -9,27 +9,28 @@ public class MessageEncoderDecoderImpl implements MessageEncoderDecoder<Message>
 
     private final ByteBuffer opCodeBuffer = ByteBuffer.allocate(2);
     private final ByteBuffer messageBuffer =  ByteBuffer.allocate( 1<<10 );
-    private byte zeroByte = 0;   //this is how you create zeroByte?
     private int zeroByteCounter = 0;
-    private short numOfUsers = 0;
-    private byte followUnfollow = 0;
-
 
     @Override
     public Message decodeNextByte(byte nextByte) {
-        //notice that the top 128 ascii characters have the same representation as their utf-8 counterparts
-        //this allow us to do the following comparison
+
         if (!opCodeBuffer.hasRemaining()) {
             return popMessage(opCodeBuffer.getShort(), nextByte);
         }
         opCodeBuffer.put(nextByte);
+        if (!opCodeBuffer.hasRemaining()){
+            messageBuffer.clear();   // make sure we are clearing the messageBuffer before start working with it//
+        }
         return null; //not a opCode yet
     }
 
     @Override
     public byte[] encode(Message message) {
+        messageBuffer.clear();
         switch (message.getOpCode()) {
             case 9:
+                 byte zeroByte = (byte) 0;   //this is how you create zeroByte?
+
                 messageBuffer.put(shortToBytes(message.getOpCode()));
                 messageBuffer.put(((NotificationMsg) message).getType());
                 messageBuffer.put(((NotificationMsg) message).getPostingUser().getBytes());
@@ -47,7 +48,6 @@ public class MessageEncoderDecoderImpl implements MessageEncoderDecoder<Message>
                    messageBuffer.put(shortToBytes(((UserListAckMsg) message).getMsgRelatedOpcode()));
                    messageBuffer.put(shortToBytes(((UserListAckMsg) message).getNumOfusers()));
                    messageBuffer.put(((UserListAckMsg) message).getUsersList().getBytes());
-                   messageBuffer.put(zeroByte);
                    break;
                } else{
                    if(message instanceof StatAckMsg){
@@ -63,7 +63,6 @@ public class MessageEncoderDecoderImpl implements MessageEncoderDecoder<Message>
                            messageBuffer.put(shortToBytes(((FollowAckMsg) message).getMsgRelatedOpcode()));
                            messageBuffer.put(shortToBytes(((FollowAckMsg) message).getNumOfusers()));
                            messageBuffer.put(((FollowAckMsg) message).getUserNameList().getBytes());
-                           messageBuffer.put(zeroByte);
                        }
                    }
                }
@@ -169,31 +168,25 @@ public class MessageEncoderDecoderImpl implements MessageEncoderDecoder<Message>
     }
 
     private Message popFollowMsg( byte nextByte ) {
-        if (messageBuffer.position() == 0){
-            followUnfollow = nextByte;
-            messageBuffer.put(nextByte);
-            return null;
-        }
-        if(messageBuffer.position() == 2){
-            messageBuffer.position(1);
-            numOfUsers = messageBuffer.getShort();
-            messageBuffer.put(nextByte);
-            return null;
-        }
 
         if (nextByte == '\0') {
             ++zeroByteCounter;
-            if (zeroByteCounter == numOfUsers){
+            if (zeroByteCounter == messageBuffer.getShort(1)){
                 String userNames = "";
                 String password = "";
-                messageBuffer.flip();  //limit = position, position =0//
-                messageBuffer.position(3);
+                messageBuffer.flip();  //limit = position, position = 0//
+               byte followUnfollow = messageBuffer.get(); // move position = 1//
+                short numOfUsers = messageBuffer.getShort(); // move position = 3
                 while(messageBuffer.hasRemaining()) {   //position != limit
-                    char c = messageBuffer.getChar(); //position ++//
+                    char c = messageBuffer.getChar(); //and do position ++//
                     userNames += c;
                 }
                 messageBuffer.clear();
+                zeroByteCounter = 0;
                 return new FollowMsg(followUnfollow, numOfUsers, userNames);
+            }else{
+                messageBuffer.put(nextByte);
+                return null;
             }
         }
         messageBuffer.put(nextByte); //message is not complete

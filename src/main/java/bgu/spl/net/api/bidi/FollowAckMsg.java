@@ -3,15 +3,11 @@ package bgu.spl.net.api.bidi;
 public class FollowAckMsg extends Message {
 
     private short numOfusers;
-    private boolean followUnfollow;
+    private boolean follow;
     private String userNameList;
 
     public short getNumOfusers() {
         return numOfusers;
-    }
-
-    public boolean isFollowUnfollow() {
-        return followUnfollow;
     }
 
     public String getUserNameList() {

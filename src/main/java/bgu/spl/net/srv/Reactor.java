@@ -3,6 +3,8 @@ package bgu.spl.net.srv;
 import bgu.spl.net.api.MessageEncoderDecoder;
 import bgu.spl.net.api.MessagingProtocol;
 import bgu.spl.net.api.bidi.BidiMessagingProtocol;
+import bgu.spl.net.api.bidi.Connections;
+import bgu.spl.net.api.bidi.ConnectionsImpl;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
@@ -21,7 +23,9 @@ public class Reactor<T> implements Server<T> {
     private final Supplier<MessageEncoderDecoder<T>> readerFactory;
     private final ActorThreadPool pool;
     private Selector selector;
-
+    private Connections<T> connections;
+    private int connectionId;
+private DataBase dataBase;
     private Thread selectorThread;
     private final ConcurrentLinkedQueue<Runnable> selectorTasks = new ConcurrentLinkedQueue<>();
 
@@ -29,31 +33,35 @@ public class Reactor<T> implements Server<T> {
             int numThreads,
             int port,
             Supplier<BidiMessagingProtocol<T>> protocolFactory,
-            Supplier<MessageEncoderDecoder<T>> readerFactory) {
+            Supplier<MessageEncoderDecoder<T>> readerFactory
+    )
+    {
 
         this.pool = new ActorThreadPool(numThreads);
         this.port = port;
         this.protocolFactory = protocolFactory;
         this.readerFactory = readerFactory;
+        this.connections = new ConnectionsImpl<>();
+
     }
 
     @Override
     public void serve() {
-	selectorThread = Thread.currentThread();
-        try (Selector selector = Selector.open();
-                ServerSocketChannel serverSock = ServerSocketChannel.open()) {
+        selectorThread = Thread.currentThread();
+        try (Selector selector = Selector.open();  //open() = default selector is provided and new selector is created
+             ServerSocketChannel serverSock = ServerSocketChannel.open()) { // the channel is open but not binned to an address
 
             this.selector = selector; //just to be able to close
 
-            serverSock.bind(new InetSocketAddress(port));
+            serverSock.bind(new InetSocketAddress(port));   // binding the channel//
             serverSock.configureBlocking(false);
-            serverSock.register(selector, SelectionKey.OP_ACCEPT);
-			System.out.println("Server started");
+            serverSock.register(selector, SelectionKey.OP_ACCEPT);   // register the channel to the selector with accept. this is for the server channel//
+            System.out.println("Server started");
 
             while (!Thread.currentThread().isInterrupted()) {
 
-                selector.select();
-                runSelectionThreadTasks();
+                selector.select();  // select the channels that are ready for I\O operations//
+                runSelectionThreadTasks();  // run  the tasks from the selector tasks queue and removes them//
 
                 for (SelectionKey key : selector.selectedKeys()) {
 
@@ -82,14 +90,15 @@ public class Reactor<T> implements Server<T> {
     }
 
     /*package*/ void updateInterestedOps(SocketChannel chan, int ops) {
-        final SelectionKey key = chan.keyFor(selector);
+        final SelectionKey key = chan.keyFor(selector);   // Retrieves the key representing the channel's registration with the given selector//
         if (Thread.currentThread() == selectorThread) {
-            key.interestOps(ops);
-        } else {
+            key.interestOps(ops);  // i think if the current thread is the selector then we immediately update the key
+        } else {  // else we add it to the selector tasks to do it later //
             selectorTasks.add(() -> {
                 key.interestOps(ops);
             });
-            selector.wakeup();
+            selector.wakeup();   //  Causes the first selection operation that has not yet returned to return immediately.
+            //(select is blocking if no key is there to select, or the kwys in the selectedSet is not ready)
         }
     }
 
@@ -97,11 +106,16 @@ public class Reactor<T> implements Server<T> {
     private void handleAccept(ServerSocketChannel serverChan, Selector selector) throws IOException {
         SocketChannel clientChan = serverChan.accept();
         clientChan.configureBlocking(false);
-        final NonBlockingConnectionHandler<T> handler = new NonBlockingConnectionHandler<T>(
+        final NonBlockingConnectionHandler<T> handler = new NonBlockingConnectionHandler<>(
                 readerFactory.get(),
                 protocolFactory.get(),
                 clientChan,
-                this);
+                this,
+                connections,
+                connectionId ); //
+        ++connectionId;
+
+
         clientChan.register(selector, SelectionKey.OP_READ, handler);
     }
 
@@ -116,7 +130,7 @@ public class Reactor<T> implements Server<T> {
             }
         }
 
-	    if (key.isValid() && key.isWritable()) {
+        if (key.isValid() && key.isWritable()) {
             handler.continueWrite();
         }
     }

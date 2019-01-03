@@ -12,6 +12,8 @@ import bgu.spl.net.srv.NonBlockingConnectionHandler;
 
 public class ConnectionsImpl<T> implements Connections<T> {
 
+
+
     private ConcurrentHashMap<Integer, ConnectionHandler<T>> handlersByClient;   // i dont know why concurrent, maybe it is not necessary//
 
     public ConnectionsImpl() {
@@ -43,8 +45,10 @@ public class ConnectionsImpl<T> implements Connections<T> {
             handlersByClient.remove(connectionId);
         }
     }
+    public void addConnection(int connectionId, ConnectionHandler<T> handler){
+        this.handlersByClient.put(connectionId,handler);
 
-
+    }
 
 
 }

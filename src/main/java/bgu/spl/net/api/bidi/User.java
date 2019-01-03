@@ -12,14 +12,14 @@ public class User {
     private ConcurrentHashMap<String, User> followersList; // users who follow current user//
     private boolean logged = false;
     private LinkedList<Message> sentMessages;
-    private ConcurrentLinkedDeque <Message> notReadMessageQueue;
+    private ConcurrentLinkedDeque <Message> notReadMessageQueue;   //not sure we need concurrent//
 
 
     public User (String name, String password ){
         this.name = name;
         this.password = password;
-        this.followingList = new ConcurrentHashMap<>();
-        this.followersList = new ConcurrentHashMap<>();
+        this.followingList = new ConcurrentHashMap<>();    //not sure we need concurrent//
+        this.followersList = new ConcurrentHashMap<>();   //not sure we need concurrent//
         this.sentMessages = new LinkedList<>();
         this.notReadMessageQueue = new ConcurrentLinkedDeque<>();
     }

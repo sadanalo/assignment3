@@ -1,33 +1,22 @@
 package bgu.spl.net.srv;
 
-import bgu.spl.net.api.bidi.Message;
 import bgu.spl.net.api.bidi.User;
 
 import java.util.LinkedList;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentLinkedDeque;
 
 public class DataBase {
 
    private ConcurrentHashMap<String,User> usersByName;
     private ConcurrentHashMap<Integer,User> usersByConnectionId;
+    private LinkedList <String> registrationQueue;
 
 
-
-
-
-    private static class dataBaseHolder{
-        private static DataBase instance = new DataBase();
-    }
-    private DataBase (){
+    public DataBase (){
         this.usersByName = new ConcurrentHashMap<>();
         this.usersByConnectionId = new ConcurrentHashMap<>();
+        this.registrationQueue = new LinkedList<>();
     }
-    public static DataBase getInstance(){
-        return dataBaseHolder.instance;
-    }
-
-
 
 
     public ConcurrentHashMap<String,User> getUsersByName() {
@@ -36,6 +25,7 @@ public class DataBase {
 
     public void registerUser (User user){
         this.usersByName.put(user.getName(),user);
+        this.registrationQueue.add(user.getName());
     }
 
     public void logInUser (User user, int connectionId){
@@ -48,6 +38,10 @@ public class DataBase {
     }
     public ConcurrentHashMap<Integer, User> getUsersByConnectionId() {
         return usersByConnectionId;
+    }
+
+    public LinkedList<String> getRegistrationQueue() {
+        return registrationQueue;
     }
 
 }

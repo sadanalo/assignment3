@@ -6,9 +6,6 @@ public class NotificationMsg extends Message {
     private boolean privateMessage;
     private String postingUser;
     private String content;
-
-
-
     private byte type;
 
     public NotificationMsg( String postingUser, String content , byte type){
@@ -16,6 +13,7 @@ public class NotificationMsg extends Message {
         this.postingUser = postingUser;
         this.content = content;
         this.type = type;
+        privateMessage = (type == (short)0);
     }
     public boolean isPrivateMessage() {
         return privateMessage;

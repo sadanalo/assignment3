@@ -19,10 +19,13 @@ public class BlockingConnectionHandler<T> implements Runnable, ConnectionHandler
     private BufferedOutputStream out;
     private volatile boolean connected = true;
 
-    public BlockingConnectionHandler(Socket sock, MessageEncoderDecoder<T> reader, BidiMessagingProtocol<T> protocol) {
+    public BlockingConnectionHandler(
+            Socket sock, MessageEncoderDecoder<T> reader,
+            BidiMessagingProtocol<T> protocol, Connections<T> connections, int connectionId) {
         this.sock = sock;
         this.encdec = reader;
         this.protocol = protocol;
+        protocol.start(connectionId, connections);
     }
 
     @Override
@@ -38,7 +41,7 @@ public class BlockingConnectionHandler<T> implements Runnable, ConnectionHandler
                     // (I think) protocol will process the message and than call Connections.send()
                     // inside the process() method.
                     // that's why "T process()" was changed to "void process"
-                    //we get the protocol when it is started already
+                    //we get the protocol when it is started already,  actually not sure
                     protocol.process(nextMessage);
                 }
             }
