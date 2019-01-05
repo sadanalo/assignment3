@@ -59,7 +59,7 @@ public class User {
         return sentMessages;
     }
 
-    public ConcurrentLinkedDeque <Message> getNotReadMessageQueue() {
+    public ConcurrentLinkedDeque <Message> getNotReadNotificationQueue() {
         return notReadMessageQueue;
     }
 

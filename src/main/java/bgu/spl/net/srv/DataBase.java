@@ -7,10 +7,10 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class DataBase {
 
-   private ConcurrentHashMap<String,User> usersByName;
+    private ConcurrentHashMap<String,User> usersByName;
     private ConcurrentHashMap<Integer,User> usersByConnectionId;
     private LinkedList <String> registrationQueue;
-
+   // private final Object queueLock;
 
     public DataBase (){
         this.usersByName = new ConcurrentHashMap<>();
@@ -24,8 +24,10 @@ public class DataBase {
     }
 
     public void registerUser (User user){
-        this.usersByName.put(user.getName(),user);
-        this.registrationQueue.add(user.getName());
+       synchronized (registrationQueue) {
+           this.registrationQueue.add(user.getName());
+           this.usersByName.put(user.getName(), user);
+       }
     }
 
     public void logInUser (User user, int connectionId){
@@ -33,7 +35,7 @@ public class DataBase {
         user.setLogged(true);
     }
     public void logoutUser(int connectionId){
-       this.usersByConnectionId.get(connectionId).setLogged(false);
+        this.usersByConnectionId.get(connectionId).setLogged(false);
         this.usersByConnectionId.remove(connectionId,this.usersByConnectionId.get(connectionId) );
     }
     public ConcurrentHashMap<Integer, User> getUsersByConnectionId() {

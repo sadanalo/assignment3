@@ -23,9 +23,8 @@ public class Reactor<T> implements Server<T> {
     private final Supplier<MessageEncoderDecoder<T>> readerFactory;
     private final ActorThreadPool pool;
     private Selector selector;
-    private Connections<T> connections;
+    private ConnectionsImpl<T> connections;
     private int connectionId;
-private DataBase dataBase;
     private Thread selectorThread;
     private final ConcurrentLinkedQueue<Runnable> selectorTasks = new ConcurrentLinkedQueue<>();
 
@@ -113,6 +112,7 @@ private DataBase dataBase;
                 this,
                 connections,
                 connectionId ); //
+         connections.connect(connectionId,handler);
         ++connectionId;
 
 

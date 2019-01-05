@@ -7,7 +7,7 @@ public class PmMsg extends Message {
     private String content;
 
     public PmMsg(String userName, String content){
-        super((short)7);
+        super((short)6);
         this.content = content;
         this.userName = userName;
     }

@@ -16,7 +16,6 @@ public class FollowMsg extends Message {
         this.numOfUsers = numOfUsers;
         this.userNameList = makeStringList(userNames);
 
-
     }
 
     private LinkedList<String> makeStringList(String userNames) {

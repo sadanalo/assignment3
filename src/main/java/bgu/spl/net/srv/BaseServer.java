@@ -1,7 +1,6 @@
 package bgu.spl.net.srv;
 
 import bgu.spl.net.api.MessageEncoderDecoder;
-import bgu.spl.net.api.MessagingProtocol;
 import bgu.spl.net.api.bidi.BidiMessagingProtocol;
 import bgu.spl.net.api.bidi.ConnectionsImpl;
 
@@ -44,7 +43,7 @@ public abstract class BaseServer<T> implements Server<T> {
 
             while (!Thread.currentThread().isInterrupted()) {
 
-                Socket clientSock = serverSock.accept();   // wits for a connection and block's until it's made//
+                Socket clientSock = serverSock.accept();   // waits for a connection and block's until it's made//
 
                 BlockingConnectionHandler<T> handler = new BlockingConnectionHandler<>(
                         clientSock,
@@ -52,9 +51,9 @@ public abstract class BaseServer<T> implements Server<T> {
                         protocolFactory.get(),
                         connections,
                         connectionId);
-                ++connectionId;
-                connections.addConnection(sock.getLocalPort(), handler);
 
+                connections.connect(connectionId, handler);
+                ++connectionId;
                 execute(handler);
             }
         } catch (IOException ex) {

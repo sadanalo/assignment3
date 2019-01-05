@@ -36,6 +36,7 @@ public class BlockingConnectionHandler<T> implements Runnable, ConnectionHandler
             in = new BufferedInputStream(sock.getInputStream());
 
             while (!protocol.shouldTerminate() && connected && (read = in.read()) >= 0) {
+
                 T nextMessage = encdec.decodeNextByte((byte) read);
                 if (nextMessage != null) {
                     // (I think) protocol will process the message and than call Connections.send()
@@ -63,7 +64,7 @@ public class BlockingConnectionHandler<T> implements Runnable, ConnectionHandler
                  out = new BufferedOutputStream(sock.getOutputStream());
 
             if (message != null) {
-                        out.write(encdec.encode(message));
+                        out.write(encdec.encode(message));// synch//
                         out.flush();
                     }
 

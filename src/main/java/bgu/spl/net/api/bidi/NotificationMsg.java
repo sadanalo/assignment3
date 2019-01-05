@@ -13,7 +13,7 @@ public class NotificationMsg extends Message {
         this.postingUser = postingUser;
         this.content = content;
         this.type = type;
-        privateMessage = (type == (short)0);
+        privateMessage = (type == (byte) 0);
     }
     public boolean isPrivateMessage() {
         return privateMessage;

@@ -45,7 +45,7 @@ public class ConnectionsImpl<T> implements Connections<T> {
             handlersByClient.remove(connectionId);
         }
     }
-    public void addConnection(int connectionId, ConnectionHandler<T> handler){
+    public void connect(int connectionId, ConnectionHandler<T> handler){
         this.handlersByClient.put(connectionId,handler);
 
     }
